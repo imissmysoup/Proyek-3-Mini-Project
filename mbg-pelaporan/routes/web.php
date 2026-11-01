@@ -1,16 +1,13 @@
 <?php
 
-use App\Http\Controllers\LaporanController;
-use App\Models\Distribusi;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RekapController;
 
 Route::middleware('auth')->group(function () {
-    // Route CRUD Laporan
-    Route::resource('laporan', LaporanController::class);
+    // [Route yang sudah ada sebelumnya...]
     
-    // Endpoint Asynchronous untuk fetch() daftar distribusi
-    Route::get('/sekolah/{sekolah}/distribusi', function ($sekolah) {
-        $distribusi = Distribusi::where('sekolah_id', $sekolah)->get();
-        return response()->json($distribusi);
-    })->name('distribusi.by_sekolah');
+    // Route khusus untuk Pemantau/Koordinator mengubah status
+    Route::patch('/laporan/{laporan}/status', [LaporanController::class, 'updateStatus'])->name('laporan.update_status');
+    
+    // Route Halaman Rekap Sederhana
+    Route::get('/rekap', [RekapController::class, 'index'])->name('rekap.index');
 });

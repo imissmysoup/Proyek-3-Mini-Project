@@ -72,4 +72,39 @@ class LaporanController extends Controller
         $sekolahs = Sekolah::all();
         return view('laporan.edit', compact('laporan', 'sekolahs'));
     }
+
+    public function show(Laporan $laporan)
+    {
+        // Pelapor hanya bisa melihat miliknya, Pemantau/Koordinator bisa melihat semua
+        if (auth()->user()->role === 'pelapor' && $laporan->user_id !== auth()->id()) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        return view('laporan.show', compact('laporan'));
+    }
+
+    public function updateStatus(Request $request, Laporan $laporan)
+    {
+        // Authorization: Pelapor tidak boleh mengubah status
+        if (auth()->user()->role === 'pelapor') {
+            abort(403, 'Anda tidak berhak mengubah status laporan.');
+        }
+
+        $request->validate([
+            'status' => 'required|in:Menunggu Tinjauan,Diproses,Diteruskan,Selesai',
+            'catatan_pemantau' => 'nullable|string'
+        ]);
+
+        // Business Rule (BR-03): Cegah penurunan status
+        if (in_array($laporan->status, ['Diteruskan', 'Selesai']) && $request->status === 'Menunggu Tinjauan') {
+            return back()->with('error', 'Laporan yang sudah Diteruskan/Selesai tidak dapat dikembalikan ke status awal.');
+        }
+
+        $laporan->update([
+            'status' => $request->status,
+            'catatan_pemantau' => $request->catatan_pemantau ?? $laporan->catatan_pemantau
+        ]);
+
+        return back()->with('success', 'Status laporan berhasil diperbarui.');
+    }
 }
