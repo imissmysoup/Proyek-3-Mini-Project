@@ -12,6 +12,11 @@ class AuthController extends Controller
         return view('auth.login'); 
     }
 
+    public function dashboard()
+    {
+        return redirect()->route('laporan.index');
+    }
+
     public function login(Request $request)
     {
         $credentials = $request->validate([

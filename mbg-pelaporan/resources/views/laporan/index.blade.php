@@ -57,11 +57,14 @@
                     <strong>{{ $laporan->status }}</strong>
                 </td>
                 <td>
-                    <!-- Business Rule: Edit hanya boleh jika status Menunggu Tinjauan -->
-                    @if($laporan->status === 'Menunggu Tinjauan' && auth()->user()->role === 'pelapor')
-                        <a href="{{ route('laporan.edit', $laporan->id) }}">Edit / Perbaiki</a>
+                    @if(auth()->user()->role === 'pelapor')
+                        @if($laporan->status === 'Menunggu Tinjauan')
+                            <a href="{{ route('laporan.edit', $laporan->id) }}">Edit / Perbaiki</a>
+                        @else
+                            <a href="{{ route('laporan.show', $laporan->id) }}">Lihat Detail</a>
+                        @endif
                     @else
-                        <span style="color: gray;">Terkunci</span>
+                        <a href="{{ route('laporan.show', $laporan->id) }}">Tindak Lanjut</a>
                     @endif
                 </td>
             </tr>

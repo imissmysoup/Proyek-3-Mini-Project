@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('distribusis', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
-            $table->id();
             $table->foreignId('sekolah_id')->constrained('sekolahs')->restrictOnDelete();
             $table->date('tanggal_distribusi');
             $table->timestamps();

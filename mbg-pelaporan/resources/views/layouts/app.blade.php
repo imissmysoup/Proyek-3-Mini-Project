@@ -12,6 +12,10 @@
             @auth
                 Halo, {{ auth()->user()->name }} ({{ auth()->user()->role }})<br>
                 <a href="{{ route('laporan.index') }}">Beranda Laporan</a>
+                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit">Logout</button>
+                </form>
             @endauth
         </div>
     </header>

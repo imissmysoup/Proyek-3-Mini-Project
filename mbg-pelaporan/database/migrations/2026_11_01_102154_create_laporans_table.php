@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('laporans', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
-            $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('sekolah_id')->constrained('sekolahs')->restrictOnDelete();
             $table->foreignId('distribusi_id')->constrained('distribusis')->restrictOnDelete();

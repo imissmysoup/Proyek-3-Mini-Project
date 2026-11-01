@@ -101,7 +101,15 @@ class LaporanController extends Controller
         }
 
         // Lanjutkan proses update jika valid
-        $laporan->update(['status' => $request->status]);
+        $request->validate([
+            'status' => 'required|in:Menunggu Tinjauan,Diproses,Diteruskan,Selesai',
+            'catatan_pemantau' => 'nullable|string',
+        ]);
+
+        $laporan->update([
+            'status' => $request->status,
+            'catatan_pemantau' => $request->catatan_pemantau,
+        ]);
         return back()->with('success', 'Status laporan berhasil diperbarui.');
     }
 }
