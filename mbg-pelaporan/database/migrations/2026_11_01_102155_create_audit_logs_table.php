@@ -14,6 +14,12 @@ return new class extends Migration
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->id();
+            $table->foreignId('laporan_id')->constrained('laporans')->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('old_status')->nullable();
+            $table->string('new_status')->nullable();
+            $table->timestamps();
         });
     }
 
