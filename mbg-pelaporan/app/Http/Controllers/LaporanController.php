@@ -85,26 +85,23 @@ class LaporanController extends Controller
 
     public function updateStatus(Request $request, Laporan $laporan)
     {
-        // Authorization: Pelapor tidak boleh mengubah status
-        if (auth()->user()->role === 'pelapor') {
-            abort(403, 'Anda tidak berhak mengubah status laporan.');
+        // Business Rule: Cegah penurunan/pengembalian status secara bebas
+        $urutanStatus = [
+            'Menunggu Tinjauan' => 1, 
+            'Diproses' => 2, 
+            'Diteruskan' => 3, 
+            'Selesai' => 4
+        ];
+        
+        $statusSekarang = $urutanStatus[$laporan->status] ?? 0;
+        $statusBaru = $urutanStatus[$request->status] ?? 0;
+
+        if ($statusBaru < $statusSekarang) {
+            return back()->with('error', 'Status laporan tidak dapat diubah mundur (downgrade).');
         }
 
-        $request->validate([
-            'status' => 'required|in:Menunggu Tinjauan,Diproses,Diteruskan,Selesai',
-            'catatan_pemantau' => 'nullable|string'
-        ]);
-
-        // Business Rule (BR-03): Cegah penurunan status
-        if (in_array($laporan->status, ['Diteruskan', 'Selesai']) && $request->status === 'Menunggu Tinjauan') {
-            return back()->with('error', 'Laporan yang sudah Diteruskan/Selesai tidak dapat dikembalikan ke status awal.');
-        }
-
-        $laporan->update([
-            'status' => $request->status,
-            'catatan_pemantau' => $request->catatan_pemantau ?? $laporan->catatan_pemantau
-        ]);
-
+        // Lanjutkan proses update jika valid
+        $laporan->update(['status' => $request->status]);
         return back()->with('success', 'Status laporan berhasil diperbarui.');
     }
 }
