@@ -3,15 +3,14 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreLaporanRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; 
+        return $this->user() !== null && $this->user()->role === 'pelapor';
     }
-
-    use Illuminate\Validation\Rule;
 
     public function rules(): array
     {
