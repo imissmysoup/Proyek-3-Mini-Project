@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Laporan;
 use App\Models\Sekolah;
+use App\Models\Distribusi;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreLaporanRequest;
 use Illuminate\Support\Facades\Storage;
@@ -70,7 +71,31 @@ class LaporanController extends Controller
         }
 
         $sekolahs = Sekolah::all();
-        return view('laporan.edit', compact('laporan', 'sekolahs'));
+        $distribusis = Distribusi::where('sekolah_id', $laporan->sekolah_id)->get();
+
+        return view('laporan.edit', compact('laporan', 'sekolahs', 'distribusis'));
+    }
+
+    public function update(StoreLaporanRequest $request, Laporan $laporan)
+    {
+        // Hanya pemilik laporan yang boleh mengubah, dan hanya saat belum diproses
+        if ($laporan->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak memiliki akses ke laporan ini.');
+        }
+
+        if ($laporan->status !== 'Menunggu Tinjauan') {
+            abort(403, 'Laporan yang sudah diproses tidak dapat diubah.');
+        }
+
+        $data = $request->validated();
+
+        if ($request->hasFile('path_bukti')) {
+            $data['path_bukti'] = $request->file('path_bukti')->store('bukti_laporan', 'public');
+        }
+
+        $laporan->update($data);
+
+        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil diperbarui.');
     }
 
     public function show(Laporan $laporan)
@@ -85,6 +110,9 @@ class LaporanController extends Controller
 
     public function updateStatus(Request $request, Laporan $laporan)
     {
+        if (auth()->user()->role === 'pelapor') {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah status laporan.');
+        }
         // Business Rule: Cegah penurunan/pengembalian status secara bebas
         $urutanStatus = [
             'Menunggu Tinjauan' => 1, 
